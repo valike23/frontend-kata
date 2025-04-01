@@ -30,7 +30,23 @@
   const switchName = (category: Icategory, i: number) => {
     categories[i].edit = true;
   };
-  const deleteCategory = (category: Icategory) => {};
+  const deleteCategory = async (category: Icategory) => {
+    const { id } = category as any;
+
+    // Find index of the category
+    const index = categories.findIndex((cat) => cat.id === id);
+    
+    // Remove category from the array if found
+    if (index !== -1) {
+        categories.splice(index, 1);
+    }
+
+    categories = categories;
+
+    // Make DELETE request
+    const resp = await HttpHelper.DELETE<Icategory[]>(`api/competition/category`, id);
+};
+
   const updateCategoryName = (category: Icategory, i: number) => {
     categories[i].edit = false;
   };

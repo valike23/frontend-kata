@@ -13,8 +13,21 @@ const switchName =(club: Iclub, i:number)=>{
   const openAddclub =()=>{
     goto('clubs/add');
   }
-  const deleteClub =(club: Iclub)=>{
-    console.log(club);
+  const deleteClub =async (club: Iclub)=>{
+    const { id } = club as any;
+
+// Find index of the category
+const index = clubs.findIndex((cat) => cat.id === id);
+
+// Remove category from the array if found
+if (index !== -1) {
+    clubs.splice(index, 1);
+}
+
+clubs = clubs;
+
+// Make DELETE request
+const resp = await HttpHelper.DELETE<Iclub>(`api/competition/clubs`, id);
   }
   const updateClubName =(club: Iclub, i:number)=>{
     clubs[i].edit = false;
