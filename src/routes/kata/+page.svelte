@@ -8,7 +8,20 @@
   let katas: Ikata[] = [];
 
   const deleteKata = async (kata: any) => {
-    console.log(kata);
+    const { id } = kata as any;
+
+// Find index of the category
+const index = katas.findIndex((cat) => cat.id === id);
+
+// Remove category from the array if found
+if (index !== -1) {
+    katas.splice(index, 1);
+}
+
+katas = katas;
+
+// Make DELETE request
+const resp = await HttpHelper.DELETE<Ikata[]>(`api/competition/kata`, id);
   };
 
   onMount(()=>{

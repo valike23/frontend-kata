@@ -70,3 +70,13 @@ export interface Ikata {
     createdAt?: Date;
     updatedAt?: Date;
 }
+
+export interface Ijudge {
+    id?: number;
+    judgeName: string;
+    password: string;
+    editName?: boolean;
+    edit?: boolean;
+    createdAt?: Date;
+    updatedAt?: Date
+}
