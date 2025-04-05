@@ -1,6 +1,9 @@
 <script lang="ts">
+  import { goto } from "$app/navigation";
+
 
   import TopBar from "$lib/components/TopBar.svelte";
+  import { EnotificationType, handleNotification } from "$lib/functions/browserFunctions";
   import { HttpHelper } from "$lib/helpers/http.helper";
   import type { Ikata } from "$lib/interfaces/competition.interface";
   let files: any;
@@ -25,14 +28,42 @@
     })
   }
 
+  const bulkSubmit = async () => {
+    try {
+      const form = new FormData();
+      if (files) form.append("excel", files[0]);
 
+      HttpHelper.POST_FILE< Ikata[]>('api/upload/kata', form).then((resp) => {
+        const { data } = resp;
+        if (data) {
+          handleNotification(
+            window,
+            "katas list was created successfully",
+            EnotificationType.SUCCESS,
+            () => {
+              goto("/kata");
+            },
+          );
+        } else {
+          handleNotification(
+            window,
+            "oops!!! katas list was not created successfully",
+            EnotificationType.ERROR
+          );
+        }
+      });
+    } catch (error: any) {
+      console.log(error.toJSON());
+      handleNotification(
+        window,
+        "oops!!! katas list was not created successfully",
+        EnotificationType.ERROR
+      );
+    }
+    
+    
+  };
 
-  
-  function bulkSubmit(event: SubmitEvent & { currentTarget: EventTarget & HTMLFormElement; }) {
-    console.log(event);
-    console.log(event.currentTarget);
-    throw new Error("Function not implemented.");
-  }
 
 </script>
 <svelte:head>

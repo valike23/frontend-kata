@@ -68,6 +68,34 @@ export class HttpHelper {
         }
     }
 
+    static async POST_FILE< M>(url: string, body: FormData): Promise<IResponseType<M>> {
+        try {
+            axios.defaults.headers.post['Content-Type'] = 'multipart/form-data';
+            const {data} = await axios.post(BASE_URL + url, body);
+            return {
+                data: data.data,
+                statusCode: data.status_code,
+                message: data.message
+            };
+        }
+        catch (error) {
+            if (axios.isAxiosError(error)) {
+
+                return {
+                    data: null,
+                    statusCode: error.response?.status || HttpStatusCode.InternalServerError,
+                    message: error.message
+                };
+            } else {
+            
+                return {
+                    data: null,
+                    statusCode: HttpStatusCode.InternalServerError,
+                    message: 'An unexpected error occurred'
+                };
+            }
+        }
+    }
     static async DELETE<M>(url: string, id: number):Promise<IResponseType<M>>{
         try {
            
