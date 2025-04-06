@@ -15,7 +15,7 @@
       history.back();
     };
     const ExternalWindow =(screen: string)=>{
-      window.open("http://localhost:3000" + screen, "_blank");
+      window.open("http://localhost:5173" + screen, "_blank");
     }
   </script>
   

@@ -14,8 +14,8 @@
   let screen = "";
   let pool: any = {};
 
-  let win: any = window;
-  const { Metro } = win;
+  let win: any ;
+  let Metro : any;
 
   let athlete = {
     id:1,
@@ -111,6 +111,7 @@
 
   onMount(() => {
     win = window;
+    Metro = win.Metro;
 
     socket = win.io("/display");
     socket.on("connect", () => {
