@@ -15,6 +15,19 @@ const activateCompetition=(competition: any, index: number)=>{
 
 const deleteCompetition=(competition: any)=>{
 
+  if (confirm("Are you sure you want to delete this competition?")) {
+    HttpHelper.DELETE(`api/competition`, competition.id)
+      .then((resp: any) => {
+        if (resp.status === 200) {
+          competitions = competitions.filter((c) => c.id !== competition.id);
+        } else {
+          alert("Failed to delete competition.");
+        }
+      })
+      .catch((error) => {
+        console.error("Error deleting competition:", error);
+      });
+  }
 }
 
 onMount(async ()=>{
