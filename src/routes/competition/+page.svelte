@@ -2,6 +2,7 @@
   import { goto } from "$app/navigation";
   import TopBar from "$lib/components/TopBar.svelte";
   import { HttpHelper } from "$lib/helpers/http.helper";
+    import type { Icompetition } from "$lib/interfaces/competition.interface";
   import dayjs from "dayjs";
   import { onMount } from "svelte";
 const openAddCompetition =() =>{
@@ -9,8 +10,14 @@ const openAddCompetition =() =>{
 }
 let competitions: any[] = [];
 
-const activateCompetition=(competition: any, index: number)=>{
-
+const activateCompetition=async (competition: any, index: number)=>{
+   if (confirm("Are you sure you want to activate this competition? All other competitions will be deactivated.")) {
+    const resp = await HttpHelper.PUT<{}, Icompetition[]>(`api/competition/activate?id=${competition.id}`,{});
+    console.log("the resp is here", resp.data);
+    competitions = resp.data as Icompetition[];
+    competitions = competitions;
+     
+   }
 }
 
 const deleteCompetition=(competition: any)=>{
