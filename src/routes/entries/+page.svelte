@@ -8,6 +8,12 @@
   let entries: Ientry[] = [];
   let deleteEntry = async (entry: Ientry) => {
     console.log(entry);
+    HttpHelper.DELETE<Ientry>(`api/competition/entry`, entry.id as number).then((resp) => {
+      const { data } = resp;
+      if (data) {
+        entries = entries.filter((e) => e.id !== entry.id);
+      }
+    });
   };
   let switchName = (entry: Ientry, index: number) => {
     entries[index].edit = true;
