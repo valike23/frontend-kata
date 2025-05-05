@@ -1,6 +1,9 @@
 <script lang="ts">
+    import { goto } from "$app/navigation";
+
 
   import TopBar from "$lib/components/TopBar.svelte";
+    import { EnotificationType, handleNotification } from "$lib/functions/browserFunctions";
   import { HttpHelper } from "$lib/helpers/http.helper";
   import type { Icategory, Iclub, Ientry } from "$lib/interfaces/competition.interface";
   import { onMount } from "svelte";
@@ -36,9 +39,37 @@
 
 
   function bulkSubmit(event: SubmitEvent & { currentTarget: EventTarget & HTMLFormElement; }) {
-    console.log(event);
-    console.log(event.currentTarget);
-    throw new Error("Function not implemented.");
+    try {
+      const form = new FormData();
+      if (files) form.append("excel", files[0]);
+
+      HttpHelper.POST_FILE< Ientry[]>('api/upload/entry', form).then((resp) => {
+        const { data } = resp;
+        if (data) {
+          handleNotification(
+            window,
+            "entries list was created successfully",
+            EnotificationType.SUCCESS,
+            () => {
+              goto("/entries");
+            },
+          );
+        } else {
+          handleNotification(
+            window,
+            "oops!!! entries list was not created successfully",
+            EnotificationType.ERROR
+          );
+        }
+      });
+    } catch (error: any) {
+      console.log(error.toJSON());
+      handleNotification(
+        window,
+        "oops!!! entries list was not created successfully",
+        EnotificationType.ERROR
+      );
+    }
   }
   function submit() {
     loading = true;
