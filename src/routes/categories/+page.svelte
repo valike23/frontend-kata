@@ -4,6 +4,8 @@
   import type { Icategory } from "$lib/interfaces/competition.interface";
   import { onMount } from "svelte";
   import dayjs from "dayjs";
+    import { EnotificationType, handleNotification } from "$lib/functions/browserFunctions";
+    import { HttpStatusCode } from "axios";
 
   const submit = async () => {
     console.log("submitting");
@@ -30,6 +32,15 @@
   const switchName = (category: Icategory, i: number) => {
     categories[i].edit = true;
   };
+
+  const draft =async (category: Icategory) =>{
+   const res = confirm('do you want to draft this competition');
+   if(!res) return ;
+   handleNotification(window, 'drafting category...', EnotificationType.INFO);
+    const resp = await HttpHelper.POST('api/competition/category/draft', category);
+    console.log(resp);
+    if(resp.statusCode != HttpStatusCode.Ok) handleNotification(window, (resp.data as any).message, EnotificationType.ERROR)
+  }
   const deleteCategory = async (category: Icategory) => {
     const { id } = category as any;
 
@@ -157,6 +168,10 @@
                 <td>
                   <button class="button primary square" title="edit category">
                     <span class="mif-pencil" />
+                  </button>
+
+                  <button on:click={()=>{draft(category)}} class="button primary square" title="draft category">
+                    <span class="mif-menu" />
                   </button>
                  
                 

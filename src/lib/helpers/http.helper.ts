@@ -51,9 +51,9 @@ export class HttpHelper {
             };
         } catch (error) {
             if (axios.isAxiosError(error)) {
-
+                console.log(error);
                 return {
-                    data: null,
+                    data: error.response?.data,
                     statusCode: error.response?.status || HttpStatusCode.InternalServerError,
                     message: error.message
                 };
