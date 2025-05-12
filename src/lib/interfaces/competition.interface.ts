@@ -12,18 +12,7 @@ export interface Icompetition {
     deletedAt?: Date
 }
 
-export interface Ientry {
-    id?: number;
-    name?: string;
-    categoryName?: string;
-    clubName?: string;
-    flag?: string;
-    categoryId?: string;
-    clubId?: number;
-    competitionId?: number;
-    createdAt?: Date;
-    updatedAt?: Date;
-}
+
 
 export interface Icategory {
     id?: number;
@@ -57,11 +46,16 @@ export interface Ientry {
     categoryName?: string;
     clubName?: string;
     flag?: string;
-    categoryId?: string;
+    categoryId?: number;
     clubId?: number;
     competitionId?: number;
     createdAt?: Date;
     updatedAt?: Date;
+}
+
+export interface partialEntry {
+    name: string;
+    club: string;
 }
 
 export interface Ikata {

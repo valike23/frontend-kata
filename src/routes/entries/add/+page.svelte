@@ -5,10 +5,10 @@
   import TopBar from "$lib/components/TopBar.svelte";
     import { EnotificationType, handleNotification } from "$lib/functions/browserFunctions";
   import { HttpHelper } from "$lib/helpers/http.helper";
-  import type { Icategory, Iclub, Ientry } from "$lib/interfaces/competition.interface";
+  import type { Icategory, Iclub, Ientry, partialEntry } from "$lib/interfaces/competition.interface";
   import { onMount } from "svelte";
   let isBulk = false;
-  let myCategory: Icategory = {};
+  let myCategory: any;
   let categories: Icategory[] = [];
   let files: any;
   let loading = false;
@@ -42,8 +42,8 @@
     try {
       const form = new FormData();
       if (files) form.append("excel", files[0]);
-
-      HttpHelper.POST_FILE< Ientry[]>('api/upload/entry', form).then((resp) => {
+console.log("list of category", myCategory);
+      HttpHelper.POST_FILE<partialEntry[]>('api/upload/entry', form).then((resp) => {
         const { data } = resp;
         if (data) {
           handleNotification(
@@ -51,7 +51,28 @@
             "entries list was created successfully",
             EnotificationType.SUCCESS,
             () => {
-              goto("/entries");
+              const entries : Partial<Ientry>[]=[];
+              data.forEach((d)=>{
+                let entry: Partial<Ientry> = {};
+                entry.clubId = clubs.find((c)=>{ return c.clubName === d.club})?.id;
+                entry.categoryId = myCategory;
+                entry.name = d.name;
+                entries.push(entry);
+              })
+
+               HttpHelper.POST<any, Ientry[]>('api/competition/entry/bulk', JSON.stringify(entries)).then((resp)=>{
+        const {data} = resp;
+        if(data){
+          console.log("did it work")
+            loading = false;
+            competitor = {};
+            goto("/entries");
+        }
+    }).catch((error)=>{
+        loading = false;
+    })
+             // 
+
             },
           );
         } else {
@@ -63,7 +84,6 @@
         }
       });
     } catch (error: any) {
-      console.log(error.toJSON());
       handleNotification(
         window,
         "oops!!! entries list was not created successfully",
@@ -80,7 +100,6 @@
             competitor = {};
         }
     }).catch((error)=>{
-        console.log(error);
         loading = false;
     })
   }

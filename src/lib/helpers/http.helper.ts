@@ -1,4 +1,4 @@
-import  { HttpStatusCode } from "axios";
+import  { AxiosHeaders, HttpStatusCode } from "axios";
 import axios from "axios";
 
 export interface IResponseType<M> {
@@ -42,8 +42,10 @@ export class HttpHelper {
 
     static  async POST<T, M>(url: string, body: T): Promise<IResponseType<M>> {
         try {
-           
-            const {data} = await axios.post(BASE_URL + url, body);
+           console.log("the body is", body);
+           let Axios = axios;
+            Axios.defaults.headers.post['Content-Type'] = 'application/json';
+            const {data} = await Axios.post(BASE_URL + url, body);
             return {
                 data: data.data,
                 statusCode: data.status_code,
