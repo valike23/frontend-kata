@@ -6,6 +6,7 @@
   import dayjs from "dayjs";
     import { EnotificationType, handleNotification } from "$lib/functions/browserFunctions";
     import { HttpStatusCode } from "axios";
+    import { goto } from "$app/navigation";
 
   const submit = async () => {
     console.log("submitting");
@@ -32,6 +33,10 @@
   const switchName = (category: Icategory, i: number) => {
     categories[i].edit = true;
   };
+
+  const gotoBrackets=async (competition: any, index: number)=>{
+   goto('/categories/drafts?id=' + competition.id)
+}
 
   const draft =async (category: Icategory) =>{
    const res = confirm('do you want to draft this competition');
@@ -168,6 +173,17 @@
                 <td>
                   <button class="button primary square" title="edit category">
                     <span class="mif-pencil" />
+                  </button>
+
+                   <button
+                    on:click={() => {
+                      gotoBrackets(category, i);
+                    }}
+                    class="button primary square "
+                    title="see bouts"
+                  >
+                    <!-- svelte-ignore element_invalid_self_closing_tag -->
+                    <span class="mif-brackets" />
                   </button>
 
                   <button on:click={()=>{draft(category)}} class="button primary square" title="draft category">

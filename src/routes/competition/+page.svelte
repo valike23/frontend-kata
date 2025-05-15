@@ -20,6 +20,9 @@ const activateCompetition=async (competition: any, index: number)=>{
    }
 }
 
+
+
+
 const deleteCompetition=(competition: any)=>{
 
   if (confirm("Are you sure you want to delete this competition?")) {
@@ -108,6 +111,8 @@ onMount(async ()=>{
                     <!-- svelte-ignore element_invalid_self_closing_tag -->
                     <span class="mif-checkmark" />
                   </button>
+
+                  
                   
                   <!-- svelte-ignore a11y_consider_explicit_label -->
                   <button

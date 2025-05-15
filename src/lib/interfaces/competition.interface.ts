@@ -74,3 +74,17 @@ export interface Ijudge {
     createdAt?: Date;
     updatedAt?: Date
 }
+
+export interface Ibout {
+    id?: number;
+    entry1Id?: number;
+    entry1?: Ientry,
+    entry2?: Ientry,
+    entry2Id?: number;
+    winnerId?: number;
+    categoryId?: number;
+    round?: number;
+    competitionId?: number;
+    createdAt?: Date;
+    updatedAt?: Date;
+}
