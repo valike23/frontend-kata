@@ -35,7 +35,7 @@
         //   form.append('body', JSON.stringify({
         //       competitionName : name
         //   }));
-        const resp = await HttpHelper.POST<any,IFileUpload>('api/upload', form);
+        const resp = await HttpHelper.POST_FILE<IFileUpload>('api/upload', form);
         if(resp){
             const {data} = resp;
             console.log("the data here is", data);
