@@ -80,6 +80,7 @@ export interface Ibout {
     entry1Id: number;
     entry1: Ientry,
     entry2: Ientry,
+    nextBout: number,
     entry2Id: number;
     winnerId: number;
     categoryId: number;
