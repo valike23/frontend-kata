@@ -1,200 +1,130 @@
 <script lang="ts">
-    import { HttpHelper } from "$lib/helpers/http.helper";
-  import { type IjudgeLogin, type Ijudge } from "$lib/interfaces/competition.interface";
-  import axios from "axios";
   import { onMount } from "svelte";
-
+  import { browser } from '$app/environment';
+  import { socket } from '$lib/socket';
+  import { HttpHelper } from "$lib/helpers/http.helper";
+  import type { Ijudge } from "$lib/interfaces/competition.interface";
   let isLogged = false;
-  let judge: Ijudge = {
-    judgeName: "",
-    password: "",
-  };
+  let judge: Ijudge = { judgeName: "", password: "" };
   let scores = 7.0;
-
-  let socket: any;
   let screen = "";
   let pool: any = {};
-
-  let win: any ;
-  let Metro : any;
-
   let athlete = {
-    id:1,
+    id: 1,
     name: "John Doe",
-    club: {
-      name: "Hawk",
-      flag: "images/HAWKtm.png",
-    },
+    club: { name: "Hawk", flag: "images/HAWKtm.png" }
   };
+  let Metro: any;
+  let win: any;
 
-  // const login =()=>{
-  //   if (judge.judgeName && judge.password) {
-  //     isLogged = true;
-  //     screen = "judge";
-  //     socket = new WebSocket("ws://localhost:8080/judge");
-  //     socket.onopen = () => {
-  //       console.log("Connected to the server");
-  //       socket.send(JSON.stringify(judge));
-  //     };
-  //     socket.onmessage = (event: any) => {
-  //       const data = JSON.parse(event.data);
-  //       pool = data.pool;
-  //       athlete.name = data.athlete.name;
-  //       athlete.club.name = data.athlete.club.name;
-  //       athlete.club.flag = data.athlete.club.flag;
-  //     };
-  //   }
-  // }
-
-  let disqualified = async () => {
-    let res = confirm("do you want to disqualify this athlete?");
-    if (res) await uploadScore(0);
-  };
-  const submitScore = async () => {
-    let res = confirm("do you want to upload this athlete's score?");
-    const scoresInput: any = document.getElementById("scores");
-    if (scoresInput) {
-      scores = Number(scoresInput.value);
-    } else {
-      console.error("Scores input element not found");
+  const disqualify = async () => {
+    if (confirm("Do you want to disqualify this athlete?")) {
+      await uploadScore(0);
     }
-    if (scores == 0) {
-      await disqualified();
+  };
+
+  const submitScore = async () => {
+    const input = document.getElementById("scores") as HTMLInputElement;
+    scores = input ? Number(input.value) : scores;
+    if (scores === 0) {
+      await disqualify();
       return;
     }
-
-    console.log(scores);
-    await uploadScore(scores);
-  };
-
-  const uploadScore = async (scores: any) => {
-    try {
-      const res = confirm(`you are about to upload a scores of ${scores}`);
-      if (res) {
-        let judgeResult = {
-          entryId: athlete.id,
-          RESULT: scores,
-          judgeId: judge.id,
-          poolId: pool.id,
-        };
-        console.log(judgeResult);
-        let form = new FormData();
-        form.append("judge", JSON.stringify(judgeResult));
-        let data = await (await axios.post(`api/judges/pool`, form)).data;
-        if (data) {
-          let resd = await win.Swal.fire({
-            icon: "success",
-            title: "Success",
-            text: "scores uploaded successfully",
-          });
-          if (resd) {
-            socket.emit("judge scores", judgeResult);
-            scores = 7.0;
-            screen = "";
-          }
-        }
-      }
-    } catch (error) {
-      console.error(error);
-      win.Swal.fire({
-        icon: "error",
-        title: "oops!!!",
-        text: "something went wrong...., please contact support.",
-      });
+    if (confirm(`Upload a score of ${scores}?`)) {
+      await uploadScore(scores);
     }
   };
+
+  const uploadScore = async (value: number) => {
+    if(!socket) return;
+    try {
+      const judgeResult = {
+        entryId: athlete.id,
+        RESULT: value,
+        judgeId: judge.id,
+        poolId: pool.id
+      };
+      const form = new FormData();
+      form.append("judge", JSON.stringify(judgeResult));
+      const { data } = await HttpHelper.POST<any, any>(`api/judges/pool`, form);
+      if (data) {
+        await win.Swal.fire({ icon: "success", title: "Success", text: "Scores uploaded" });
+        socket.emit("judge scores", judgeResult);
+        scores = 7.0;
+        screen = "";
+      }
+    } catch (e) {
+      console.error(e);
+      win.Swal.fire({ icon: "error", title: "Oops!", text: "Something went wrong. Please contact support." });
+    }
+  };
+
   const reset = () => {
     scores = 7.0;
-    let dap = document.getElementById("scores");
-    let inputp = Metro.getPlugin(dap, "spinner");
-    inputp.val(7);
+    const el = document.getElementById("scores");
+    const plugin = Metro.getPlugin(el, "spinner");
+    plugin.val(scores);
   };
 
-   const login = async () => {
+  const login = async () => {
     try {
-     
-      const data = {
-        name: judge.judgeName,
-        password: judge.password,
-      };
       const response = await HttpHelper.POST<Ijudge, Ijudge>(`api/application/judge/login`, judge);
-      if (response.data != null) {
-        let res = await win.Swal.fire({
-          icon: "success",
-          title: "Success",
-          text: "login was successful",
-        });
-        if (res) {
-          console.log("sepecial users", response.data);
-          sessionStorage.setItem("kataUser", JSON.stringify(response.data));
-          //handle here
-          isLogged = true;
-          judge = response.data;
-        }
+      console.log(response);
+
+      if (response.statusCode == 200) {
+        await win.Swal.fire({ icon: "success", title: "Logged in", text: "Login successful" });
+        sessionStorage.setItem("kataUser", JSON.stringify(response.data));
+        isLogged = true;
+        judge = response.data;
       } else {
-        win.Swal.fire({
-          icon: "error",
-          title: "error",
-          text: "user name or password incorrect",
-        });
+        const res: any = response;
+        win.Swal.fire({ icon: "error", title: "Error", text: res?.data?.err?.message });
+        return;
       }
-    } catch (error) {
-      console.error(error);
-      win.Swal.fire({
-        icon: "error",
-        title: "oops!!!",
-        text: "something went wrong...., please contact support.",
-      });
+    } catch {
+      win.Swal.fire({ icon: "error", title: "Oops!", text: "Something went wrong. Please contact support." });
     }
   };
+
+  const disqualified = ()=>{}
 
   onMount(() => {
     win = window;
     Metro = win.Metro;
-
-    socket = win.io("/display");
-    socket.on("connect", () => {
-      console.log(socket.id);
-    });
-    socket.on("start judge", async (data: any) => {
-      athlete = data.athlete;
-      console.log("start judge data:", data);
-
-      athlete.club = {name: '', flag: ''};
-      pool = data.pool;
-      screen = "judge";
-      scores = 7.0;
-      let dap = document.getElementById("scores");
-      let inputp = Metro.getPlugin(dap, "spinner");
-      inputp.val(7);
-      setTimeout(() => {
-        let ap = document.getElementById("scores");
-        console.log("tools here :", ap);
-        win.$(ap).on("plusClick", (e: any) => {
-          console.log(e.detail);
-          let input = Metro.getPlugin(ap, "spinner");
-          if (input.val() < 5) input.val(5);
-        });
-        win.$(ap).on("minusClick", (e: any) => {
-          let input = Metro.getPlugin(ap, "spinner");
-          if (input.val() < 5) input.val(0);
-        });
-      }, 3000);
-    });
-    let userString = sessionStorage.getItem("kataUser");
-    if (userString == undefined) {
-      isLogged = false;
-    } else {
+    if(!socket) return;
+    const stored = sessionStorage.getItem("kataUser");
+    if (stored) {
       isLogged = true;
-      judge = JSON.parse(userString);
+      judge = JSON.parse(stored);
+    }
+    if (browser) {
+      socket.on("connect", () => console.log("Socket connected:", socket?.id));
+      socket.on("start judge", (data: any) => {
+        athlete = data.athlete;
+        pool = data.pool;
+        screen = "judge";
+        scores = 7.0;
+        setTimeout(() => {
+          const el = document.getElementById("scores");
+          win.$(el).on("plusClick", () => {
+            const spinner = Metro.getPlugin(el, "spinner");
+            if (spinner.val() < 5) spinner.val(5);
+          });
+          win.$(el).on("minusClick", () => {
+            const spinner = Metro.getPlugin(el, "spinner");
+            if (spinner.val() < 5) spinner.val(0);
+          });
+        }, 3000);
+      });
     }
   });
-
 </script>
 
 <svelte:head>
-  <title>KATA:: {isLogged ? judge.judgeName : "kata judge screen app"}</title>
+  <title>KATA:: {isLogged ? judge.judgeName : 'Kata Judge Screen'}</title>
 </svelte:head>
+
+<!-- Rest of your markup unchanged -->
 
 <div class="container-fluid">
   {#if isLogged}
