@@ -1,5 +1,6 @@
 <script lang="ts">
-  import type { Ijudge } from "$lib/interfaces/competition.interface";
+    import { HttpHelper } from "$lib/helpers/http.helper";
+  import { type IjudgeLogin, type Ijudge } from "$lib/interfaces/competition.interface";
   import axios from "axios";
   import { onMount } from "svelte";
 
@@ -26,24 +27,24 @@
     },
   };
 
-  const login =()=>{
-    if (judge.judgeName && judge.password) {
-      isLogged = true;
-      screen = "judge";
-      socket = new WebSocket("ws://localhost:8080/judge");
-      socket.onopen = () => {
-        console.log("Connected to the server");
-        socket.send(JSON.stringify(judge));
-      };
-      socket.onmessage = (event: any) => {
-        const data = JSON.parse(event.data);
-        pool = data.pool;
-        athlete.name = data.athlete.name;
-        athlete.club.name = data.athlete.club.name;
-        athlete.club.flag = data.athlete.club.flag;
-      };
-    }
-  }
+  // const login =()=>{
+  //   if (judge.judgeName && judge.password) {
+  //     isLogged = true;
+  //     screen = "judge";
+  //     socket = new WebSocket("ws://localhost:8080/judge");
+  //     socket.onopen = () => {
+  //       console.log("Connected to the server");
+  //       socket.send(JSON.stringify(judge));
+  //     };
+  //     socket.onmessage = (event: any) => {
+  //       const data = JSON.parse(event.data);
+  //       pool = data.pool;
+  //       athlete.name = data.athlete.name;
+  //       athlete.club.name = data.athlete.club.name;
+  //       athlete.club.flag = data.athlete.club.flag;
+  //     };
+  //   }
+  // }
 
   let disqualified = async () => {
     let res = confirm("do you want to disqualify this athlete?");
@@ -107,6 +108,44 @@
     let dap = document.getElementById("scores");
     let inputp = Metro.getPlugin(dap, "spinner");
     inputp.val(7);
+  };
+
+   const login = async () => {
+    try {
+     
+      const data = {
+        name: judge.judgeName,
+        password: judge.password,
+      };
+      const response = await HttpHelper.POST<Ijudge, Ijudge>(`api/application/judge/login`, judge);
+      if (response.data != null) {
+        let res = await win.Swal.fire({
+          icon: "success",
+          title: "Success",
+          text: "login was successful",
+        });
+        if (res) {
+          console.log("sepecial users", response.data);
+          sessionStorage.setItem("kataUser", JSON.stringify(response.data));
+          //handle here
+          isLogged = true;
+          judge = response.data;
+        }
+      } else {
+        win.Swal.fire({
+          icon: "error",
+          title: "error",
+          text: "user name or password incorrect",
+        });
+      }
+    } catch (error) {
+      console.error(error);
+      win.Swal.fire({
+        icon: "error",
+        title: "oops!!!",
+        text: "something went wrong...., please contact support.",
+      });
+    }
   };
 
   onMount(() => {

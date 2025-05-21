@@ -75,6 +75,11 @@ export interface Ijudge {
     updatedAt?: Date
 }
 
+export interface IjudgeLogin {
+    name: string,
+    password: string
+}
+
 export interface Ibout {
     id: number;
     entry1Id: number;
