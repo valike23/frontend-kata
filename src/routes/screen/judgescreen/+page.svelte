@@ -4,10 +4,12 @@
   import { socket } from '$lib/socket';
   import { HttpHelper } from "$lib/helpers/http.helper";
   import type { Ijudge } from "$lib/interfaces/competition.interface";
+
   let isLogged = false;
   let judge: Ijudge = { judgeName: "", password: "" };
+  // Align body fields with API expectations
+  let body: { name: string; password: string } = { name: "", password: "" };
   let scores = 7.0;
-  let body: any ={ judgeName: "", password: "" };
   let screen = "";
   let pool: any = {};
   let athlete = {
@@ -15,8 +17,8 @@
     name: "John Doe",
     club: { name: "Hawk", flag: "images/HAWKtm.png" }
   };
-  let Metro: any;
   let win: any;
+  let Metro: any;
 
   const disqualify = async () => {
     if (confirm("Do you want to disqualify this athlete?")) {
@@ -37,7 +39,7 @@
   };
 
   const uploadScore = async (value: number) => {
-    if(!socket) return;
+    if (!socket) return;
     try {
       const judgeResult = {
         entryId: athlete.id,
@@ -67,47 +69,46 @@
     plugin.val(scores);
   };
 
-  const logout = (()=>{
+  const logout = () => {
     sessionStorage.removeItem("kataUser");
-    judge = {judgeName: '', password: ''};
-        isLogged = false;
-  })
+    isLogged = false;
+    judge = { judgeName: "", password: "" };
+    screen = "";
+  };
 
   const login = async () => {
     try {
-      console.log(body);
-      const response = await HttpHelper.POST<Ijudge, Ijudge>(`api/application/judge/login`, body);
-      console.log(response);
-
-      if (response.statusCode == 200) {
+      // Send the body object which matches API fields: { name, password }
+      const response = await HttpHelper.POST<{ name: string; password: string }, Ijudge>(
+        `api/application/judge/login`,
+        body
+      );
+      if (response.statusCode === 200 && response.data) {
         await win.Swal.fire({ icon: "success", title: "Logged in", text: "Login successful" });
         sessionStorage.setItem("kataUser", JSON.stringify(response.data));
         isLogged = true;
-
-        judge = response.data as Ijudge;
+        judge = response.data;
       } else {
-        const res: any = response;
-        win.Swal.fire({ icon: "error", title: "Error", text: res?.data?.err?.message });
-        return;
+        let res : any= response.data;
+        win.Swal.fire({ icon: "error", title: "Error", text: res?.err?.message || "Login failed" });
       }
-    } catch {
+    } catch (e) {
+      console.error(e);
       win.Swal.fire({ icon: "error", title: "Oops!", text: "Something went wrong. Please contact support." });
     }
   };
 
-  const disqualified = ()=>{}
-
   onMount(() => {
     win = window;
     Metro = win.Metro;
-    if(!socket) return;
+    if (!socket) return;
     const stored = sessionStorage.getItem("kataUser");
     if (stored) {
       isLogged = true;
       judge = JSON.parse(stored);
     }
     if (browser) {
-      socket.on("connect", () => console.log("Socket connected:", socket?.id));
+      socket.on("connect", () => console.log("Socket connected:", socket.id));
       socket.on("start judge", (data: any) => {
         athlete = data.athlete;
         pool = data.pool;
@@ -132,6 +133,10 @@
 <svelte:head>
   <title>KATA:: {isLogged ? judge.judgeName : 'Kata Judge Screen'}</title>
 </svelte:head>
+
+<!-- Form fields should bind to `body.name` and `body.password` -->
+<!-- e.g.: <input bind:value={body.name} ... />  -->
+
 
 <!-- Rest of your markup unchanged -->
 
