@@ -171,7 +171,9 @@
                 <td>{category.gender}</td>
 
                 <td>
+                  <!-- svelte-ignore a11y_consider_explicit_label -->
                   <button class="button primary square" title="edit category">
+                    <!-- svelte-ignore element_invalid_self_closing_tag -->
                     <span class="mif-pencil" />
                   </button>
 
@@ -180,13 +182,15 @@
                       gotoBrackets(category, i);
                     }}
                     class="button primary square "
-                    title="see bouts"
+                    title="draw bouts"
                   >
                     <!-- svelte-ignore element_invalid_self_closing_tag -->
-                    <span class="mif-brackets" />
+                    <span class="mif-assignment" />
                   </button>
 
+                  <!-- svelte-ignore a11y_consider_explicit_label -->
                   <button on:click={()=>{draft(category)}} class="button primary square" title="draft category">
+                    <!-- svelte-ignore element_invalid_self_closing_tag -->
                     <span class="mif-menu" />
                   </button>
                  
@@ -195,6 +199,8 @@
                     class="button alert square"
                     title="destroy this category"
                   >
+                    <!-- svelte-ignore a11y_no_static_element_interactions -->
+                    <!-- svelte-ignore element_invalid_self_closing_tag -->
                     <span
                       on:keypress={() => {
                         deleteCategory(category);

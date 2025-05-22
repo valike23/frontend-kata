@@ -51,11 +51,11 @@ export class HttpHelper {
   static async POST<T, M>(url: string, body: T): Promise<IResponseType<M>> {
     try {
       // Using the JSON-configured client
-      const { data } = await jsonClient.post(url, body);
+      const resp = await jsonClient.post(url, body);
       return {
-        data: data.data,
-        statusCode: data.status_code,
-        message: data.message,
+        data: resp.data.data,
+        statusCode: resp.status,
+        message: resp.statusText,
       };
     } catch (error) {
       if (axios.isAxiosError(error)) {

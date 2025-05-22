@@ -7,6 +7,7 @@
   let isLogged = false;
   let judge: Ijudge = { judgeName: "", password: "" };
   let scores = 7.0;
+  let body: any ={ judgeName: "", password: "" };
   let screen = "";
   let pool: any = {};
   let athlete = {
@@ -66,16 +67,24 @@
     plugin.val(scores);
   };
 
+  const logout = (()=>{
+    sessionStorage.removeItem("kataUser");
+    judge = {judgeName: '', password: ''};
+        isLogged = false;
+  })
+
   const login = async () => {
     try {
-      const response = await HttpHelper.POST<Ijudge, Ijudge>(`api/application/judge/login`, judge);
+      console.log(body);
+      const response = await HttpHelper.POST<Ijudge, Ijudge>(`api/application/judge/login`, body);
       console.log(response);
 
       if (response.statusCode == 200) {
         await win.Swal.fire({ icon: "success", title: "Logged in", text: "Login successful" });
         sessionStorage.setItem("kataUser", JSON.stringify(response.data));
         isLogged = true;
-        judge = response.data;
+
+        judge = response.data as Ijudge;
       } else {
         const res: any = response;
         win.Swal.fire({ icon: "error", title: "Error", text: res?.data?.err?.message });
@@ -147,7 +156,9 @@
             <span class="font-size-18"> RESULT</span>&nbsp;&nbsp;
           </div>
           <div class="cell-2">
-            <button class="btn btn-warning btn-block btn btn-secondary"
+            <button 
+            on:click={logout}
+             class="btn btn-warning btn-block btn btn-secondary"
               >Logout</button
             >
           </div>
@@ -261,7 +272,8 @@
             <span class="font-size-18">SCORES</span>&nbsp;&nbsp;
           </div>
           <div class="col-2">
-            <button class="btn btn-warning btn-block btn btn-secondary"
+            <button on:click={logout}
+             class="btn btn-warning btn-block btn btn-secondary"
               >Logout</button
             >
           </div>
@@ -361,7 +373,8 @@
                 <div class="form-group">
                   <label for="name">Nick Name</label>
                   <input
-                    bind:value={judge.judgeName}
+                  id="judgeName"
+                    bind:value={body.judgeName}
                     required
                     data-role="input"
                     class="form-control"
@@ -373,7 +386,8 @@
                 <div class="form-group">
                   <label for="name">password </label>
                   <input
-                    bind:value={judge.password}
+                  id="judgePassword"
+                    bind:value={body.password}
                     required
                     data-role="input"
                     class="form-control"
